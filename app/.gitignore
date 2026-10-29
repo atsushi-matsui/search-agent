@@ -39,6 +39,7 @@ credentials/
 !package-lock.json
 !tsconfig.json
 !tsconfig.node.json
+!backend/scripts/movies_index_mapping.json
 
 # Environment files
 .env
