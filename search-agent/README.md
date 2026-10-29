@@ -15,6 +15,13 @@
 ### ユーザー嗜好の学習
 検索履歴からユーザーの好みを学習し、パーソナライズされた検索結果を提供。使うほどに精度が向上します。
 
+### 仕組み
+検索は8フェーズのエージェントパイプラインで処理します。
+
+会話意図分析 → クエリ構造化 → 嗜好取得 → DSL生成 → 検索 → 再ランキング → 回答生成 → 嗜好更新
+
+各エージェントのシステムプロンプトは `backend/app/prompts/{エージェント名}/v{N}.md` でバージョン管理しています。詳細は [エージェント仕様](docs/SPECIFICATION.md) を参照してください。
+
 ## 会話型検索の例
 
 ### 絞り込み・拡張（継続表現あり）
@@ -55,10 +62,14 @@ AI: [盛り上がる映画を10件表示]          ← 新規検索（initial）
 ### 起動
 
 ```bash
+# GCP 認証ファイルを作成（初回のみ）
+gcloud auth application-default login
+
+# リポジトリ直下から
 cd search-agent
 
 # コンテナ起動 + 映画データのインデックス作成
-make up
+VERTEX_PROJECT_ID=<GCPプロジェクトID> make up
 ```
 
 Makefile を使わない場合:
@@ -73,7 +84,7 @@ http://localhost:3001 でフロントエンドにアクセスできます（`mak
 ### 停止
 
 ```bash
-docker compose down
+make down
 ```
 
 ## API 使用例
@@ -116,17 +127,20 @@ curl -X DELETE "http://localhost:8001/search/user/user_001"
 |------------|------|
 | [アーキテクチャ](docs/ARCHITECTURE.md) | 技術スタック、システム構成図、シーケンス図、ファイル構成 |
 | [エージェント仕様](docs/SPECIFICATION.md) | 各エージェントの詳細仕様、Redisデータ構造 |
+| [紹介スライド](docs/presentation.md) | システムの紹介（Marp。`make slides` で PDF 生成） |
+| [フロントエンド](frontend/README.md) | フロントエンドの開発方法・機能 |
 
 ## 技術スタック
 
 | コンポーネント | 技術 |
 |--------------|------|
 | バックエンド | FastAPI (Python) |
-| フロントエンド | React 18 + TypeScript + Vite |
+| フロントエンド | React 18 + TypeScript + Vite + Tailwind CSS |
 | LLM | Claude (Vertex AI) |
 | 検索エンジン | Elasticsearch 8.16.0 |
-| キャッシュ | Redis 7.4.1 |
+| 嗜好・会話の保存 | Redis 7.4.1 |
 | コンテナ | Docker Compose |
+| データ | TMDb 映画データ 約50,000件 |
 
 ## ポート
 
@@ -136,3 +150,35 @@ curl -X DELETE "http://localhost:8001/search/user/user_001"
 | Frontend | 3001 |
 | Elasticsearch | 9201 |
 | Redis | 6380 |
+
+## ディレクトリ構成
+
+```
+.                       # リポジトリ直下
+├── search-agent/       # アプリケーション本体（このディレクトリ）
+│   ├── backend/        # FastAPI + エージェント群（プロンプトは backend/app/prompts/）
+│   ├── frontend/       # React フロントエンド
+│   ├── docs/           # アーキテクチャ・仕様・紹介スライド
+│   ├── docker-compose.yml
+│   └── Makefile
+├── data/               # TMDb 映画データ（CSV）
+└── aqua.yaml           # 開発ツールのバージョン管理（gitleaks）
+```
+
+## データ
+
+| ファイル | 内容 |
+|---------|------|
+| `data/tmdb_movies_50k.csv` | インデックス作成に使用する映画データ（約50,000件） |
+| `data/tmdb_movies_data.csv` | 別形式の TMDb データ（現在のインデックス作成では未使用） |
+
+`data/` はコンテナの `/data` にマウントされ、`backend/scripts/init_movies_index.py` が読み込みます。
+
+## 開発ツール
+
+[aqua](https://aquaproj.github.io/) で [gitleaks](https://github.com/gitleaks/gitleaks)（シークレット混入チェック）のバージョンを管理しています。リポジトリ直下で実行します。
+
+```bash
+aqua i
+gitleaks git .
+```
