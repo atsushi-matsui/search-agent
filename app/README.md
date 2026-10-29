@@ -66,7 +66,7 @@ AI: [盛り上がる映画を10件表示]          ← 新規検索（initial）
 gcloud auth application-default login
 
 # リポジトリ直下から
-cd search-agent
+cd app
 
 # コンテナ起動 + 映画データのインデックス作成
 VERTEX_PROJECT_ID=<GCPプロジェクトID> make up
@@ -155,7 +155,7 @@ curl -X DELETE "http://localhost:8001/search/user/user_001"
 
 ```
 .                       # リポジトリ直下
-├── search-agent/       # アプリケーション本体（このディレクトリ）
+├── app/                # アプリケーション本体（このディレクトリ）
 │   ├── backend/        # FastAPI + エージェント群（プロンプトは backend/app/prompts/）
 │   ├── frontend/       # React フロントエンド
 │   ├── docs/           # アーキテクチャ・仕様・紹介スライド

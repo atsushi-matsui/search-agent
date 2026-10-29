@@ -148,7 +148,7 @@
 ## ファイル構成
 
 ```
-search-agent/
+app/
 ├── backend/
 │   ├── app/
 │   │   ├── agents/           # 各種エージェント

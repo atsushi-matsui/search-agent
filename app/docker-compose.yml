@@ -1,3 +1,6 @@
+# ディレクトリ名（app）に依存せず、コンテナ・ボリューム名を search-agent で固定する
+name: search-agent
+
 services:
   redis:
     image: redis:7.4.1-alpine
