@@ -1,0 +1,7 @@
+fastapi==0.118.2
+elasticsearch==8.16.0
+anthropic[vertex]==0.52.0
+pydantic==2.10.6
+pydantic-settings==2.7.1
+uvicorn==0.34.0
+redis==5.2.1
